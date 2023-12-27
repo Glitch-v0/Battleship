@@ -1,0 +1,6 @@
+-Place ships on player's board
+--Ships can be placed horizontally or vertically
+--Use length to determine how which slots to check
+--Must check if each needed space is already occupied or null
+--Push occupied slots to array
+--Loop over occupied slots,  setting each .occupied to true
