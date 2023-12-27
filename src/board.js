@@ -4,6 +4,8 @@
 export default class Board {
     constructor() {
         this.slotsMap = {}
+        this.ships = []
+        this.receivedAttacks = []
         this.createBoardSlots()
         this.assignAllReferences()
     }
@@ -28,17 +30,16 @@ export default class Board {
         directionReference,
         referenceSlotCoordinate
     ) {
-        currentSlotCoordinate[directionReference] =
-          referenceSlotCoordinate
+        currentSlotCoordinate[directionReference] = referenceSlotCoordinate
     }
 
-  assignAllReferences() {
-      const letters = 'abcdefghij'
+    assignAllReferences() {
+        const letters = 'abcdefghij'
         for (const [key, value] of Object.entries(this.slotsMap)) {
             // Just easier to read variables
             const xCoordinate = key[0]
-          const yCoordinate = Number(key[1])
-          const xIndex = letters.indexOf(xCoordinate);
+            const yCoordinate = Number(key[1])
+            const xIndex = letters.indexOf(xCoordinate)
             if (xIndex < 9) {
                 /* Assigns each slot's right direction to the slot one column to the right,
                           unless it's in the last column */
@@ -76,38 +77,38 @@ export default class Board {
                 )
             }
         }
-  }
-    
+    }
+
     placeShip(ship, intialSlotCoordinate, orientation = 'up') {
         // Checks if initial slot is occupied or non-existent
         if (
-            (this.slotsMap[intialSlotCoordinate].occupied !== false) ||
-            (this.slotsMap[intialSlotCoordinate] === null)
+            this.slotsMap[intialSlotCoordinate].occupied !== false ||
+            !this.validCoordinate(intialSlotCoordinate)
         ) {
             return false
         }
 
         // Will be the # of times to check in for loop
-        const numberOfSlotsToOccupy = ship.length;
+        const numberOfSlotsToOccupy = ship.length
 
         // Initalizes next slot to check before running loop
         let nextSlot = this.slotsMap[intialSlotCoordinate][orientation]
         const slotsToOccupy = [intialSlotCoordinate]
-        //console.log({ intialSlotCoordinate, nextSlot, numberOfSlotsToOccupy, orientation })
-        
+
         /* Checks if there is room for the ship
          i = 1 since initial slot is provided by player */
         for (let i = 1; i < numberOfSlotsToOccupy; i++) {
-            if ( // End if next slot doesn't exist
-                nextSlot === undefined ||
-                nextSlot === null
+            if (
+                // End if next slot doesn't exist
+                !this.validCoordinate(nextSlot)
             ) {
                 return false
             }
             if (this.slotsMap[nextSlot].occupied === false) {
-                slotsToOccupy.push()
+                slotsToOccupy.push(nextSlot)
                 nextSlot = this.slotsMap[nextSlot][orientation]
-            } else { // Ship cannot fit here!
+            } else {
+                // Ship cannot fit here!
                 return false
             }
         }
@@ -115,12 +116,37 @@ export default class Board {
         /* Loop over occupied slots,
         Changing their occupied value to true */
         for (let i = 0; i < slotsToOccupy.length; i++) {
-            const currentSlot = slotsToOccupy[i];
-            this.slotsMap[currentSlot].occupied = true;
+            const currentSlot = slotsToOccupy[i]
+            this.slotsMap[currentSlot].occupied = true
         }
 
-        // Update the ship's slots to that of the array 
-        ship.slots = slotsToOccupy;
+        // Update the ship's slots to that of the array
+        ship.slots = slotsToOccupy
+        this.ships.push(ship)
+        return true
+    }
+
+    validCoordinate(coordinate) {
+        if (this.slotsMap[coordinate] === undefined || 
+            this.slotsMap[coordinate] === null) {
+            return false
+        }
+        return true
+    }
+
+    receiveAttack(coordinate) {
+        if (!this.validCoordinate(coordinate) || this.receivedAttacks.includes(coordinate)) {
+            console.log('Attack not received!')
+            return false // Not a valid coordinate, or has already been attacked
+        }
+        this.ships.forEach(ship => { // Attack hits
+            if (ship.slots.includes(coordinate)) {
+                // Attack hits
+                ship.hits += 1
+            }
+        });
+        
+        this.receivedAttacks.push(coordinate)
         return true
     }
 }
