@@ -150,4 +150,18 @@ export default class Board {
         this.receivedAttacks.push(coordinate)
         return true
     }
+
+    shipsAllSunk() {
+        let shipCount = this.ships.length
+        let sankShips = 0
+         this.ships.forEach((ship) => {
+             if (ship.sunk) {
+                 sankShips++
+             }
+         })
+        if (sankShips === shipCount) {
+            return true
+        }
+        return false
+    }
 }
