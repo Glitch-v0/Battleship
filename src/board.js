@@ -136,16 +136,17 @@ export default class Board {
 
     receiveAttack(coordinate) {
         if (!this.validCoordinate(coordinate) || this.receivedAttacks.includes(coordinate)) {
-            console.log('Attack not received!')
             return false // Not a valid coordinate, or has already been attacked
         }
-        this.ships.forEach(ship => { // Attack hits
+        this.ships.forEach(ship => {
             if (ship.slots.includes(coordinate)) {
                 // Attack hits
-                ship.hits += 1
+                ship.hit()
+                ship.isSunk()
             }
         });
         
+        // For a hit or miss, store the attack
         this.receivedAttacks.push(coordinate)
         return true
     }
