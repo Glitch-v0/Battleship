@@ -104,7 +104,6 @@ export default class Board {
             ) {
                 return false
             }
-            console.log({ nextSlot })
             if (this.slotsMap[nextSlot].occupied === false) {
                 slotsToOccupy.push()
                 nextSlot = this.slotsMap[nextSlot][orientation]
