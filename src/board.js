@@ -1,3 +1,5 @@
+import Ship from "./ship"
+
 /* eslint-disable no-plusplus */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-param-reassign */
@@ -79,6 +81,12 @@ export default class Board {
         }
     }
 
+    getRandomSlotKey() {
+        const keys = Object.keys(this.slotsMap)
+        const randomIndex = Math.floor(Math.random() * keys.length)
+        return keys[randomIndex]
+    }
+
     placeShip(ship, intialSlotCoordinate, orientation = 'up') {
         // Checks if initial slot is occupied or non-existent
         if (
@@ -126,26 +134,46 @@ export default class Board {
         return true
     }
 
+    placeShips() {
+        let carrier = new Ship(5, undefined, 0, false, 'Carrier')
+        let battleship = new Ship(5, undefined, 0, false, 'Battleship')
+        let destroyer = new Ship(5, undefined, 0, false, 'Destroyer')
+        let submarine = new Ship(5, undefined, 0, false, 'Submarine')
+        let patrolBoat = new Ship(5, undefined, 0, false, 'Patrol Boat')
+        let shipsToPlace = [
+            carrier, battleship, destroyer, submarine, patrolBoat
+        ]
+
+        for (let i = 0; i < shipsToPlace.length; i++) {
+            this.placeShip(shipsToPlace[i], `a${i}`, 'right')
+        }
+    }
+
     validCoordinate(coordinate) {
-        if (this.slotsMap[coordinate] === undefined || 
-            this.slotsMap[coordinate] === null) {
+        if (
+            this.slotsMap[coordinate] === undefined ||
+            this.slotsMap[coordinate] === null
+        ) {
             return false
         }
         return true
     }
 
     receiveAttack(coordinate) {
-        if (!this.validCoordinate(coordinate) || this.receivedAttacks.includes(coordinate)) {
+        if (
+            !this.validCoordinate(coordinate) ||
+            this.receivedAttacks.includes(coordinate)
+        ) {
             return false // Not a valid coordinate, or has already been attacked
         }
-        this.ships.forEach(ship => {
+        this.ships.forEach((ship) => {
             if (ship.slots.includes(coordinate)) {
                 // Attack hits
                 ship.hit()
                 ship.isSunk()
             }
-        });
-        
+        })
+
         // For a hit or miss, store the attack
         this.receivedAttacks.push(coordinate)
         return true
@@ -154,11 +182,11 @@ export default class Board {
     shipsAllSunk() {
         let shipCount = this.ships.length
         let sankShips = 0
-         this.ships.forEach((ship) => {
-             if (ship.sunk) {
-                 sankShips++
-             }
-         })
+        this.ships.forEach((ship) => {
+            if (ship.sunk) {
+                sankShips++
+            }
+        })
         if (sankShips === shipCount) {
             return true
         }

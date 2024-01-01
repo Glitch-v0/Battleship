@@ -1,9 +1,10 @@
 export default class Ship {
-    constructor(length, slots, hits = 0, sunk = false) {
+    constructor(length, slots, hits = 0, sunk = false, title = "ship") {
         this.length = length
         this.hits = hits
         this.sunk = sunk
         this.slots = slots
+        this.title = title
     }
 
     hit() {
