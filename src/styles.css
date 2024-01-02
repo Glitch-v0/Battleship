@@ -1,0 +1,18 @@
+#boardContainers {
+    display: flex;
+    height: 90vh;
+    width: 100vw;
+    justify-content: center;
+    background-color: rgb(9, 23, 36);
+}
+
+.playerBoard {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    grid-column-gap: 4vw;
+    grid-row-gap: 5vh;
+    background-color: rgb(23, 42, 109);
+    border: 1px solid black;
+    margin: 5vh;
+}

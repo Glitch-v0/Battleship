@@ -10,14 +10,16 @@ export default class Player {
     }
 
     makeAttack(enemyBoard, attackCoordinate) {
-        enemyBoard.receiveAttack(attackCoordinate)
+        if (enemyBoard.receiveAttack(attackCoordinate)) {
+            this.unAttackedCoordinates.splice(this.unAttackedCoordinates.indexOf(attackCoordinate), 1)
+            return true
+        }
+        return false
     }
 
     makeRandomAttack(enemyBoard) {
         const randomIndex = Math.floor(Math.random() * this.unAttackedCoordinates.length)
         const randomCoordinate = this.unAttackedCoordinates[randomIndex]
-        this.makeAttack(enemyBoard, randomCoordinate)
-        this.unAttackedCoordinates.splice(randomIndex, 1)
-        console.log(`Attacked ${randomCoordinate}`)
+        return this.makeAttack(enemyBoard, randomCoordinate)
     }
 }
