@@ -1,12 +1,14 @@
 import Player from './player'
 import Ship from './ship'
 import Board from './board'
-import './gui'
+import Gui from './gui'
 import 'normalize.css'
 import './styles.css'
 
 const p1 = new Player(false, 'Nathan')
 const p2 = new Player(false, 'Computer')
+const gui = new Gui()
+gui.createGridCells();
 
 while (!p1.board.shipsAllSunk() || !p2.board.shipsAllSunk()) {
     p1.makeRandomAttack(p2.board)
