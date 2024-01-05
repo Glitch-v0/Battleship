@@ -32,8 +32,8 @@ export default class Gui {
     }
 
     placeShipChangeFooterText(player, ship, cell) {
-            player.board.placeShip(ship, cell.id, 'up')
-            this.changeFooterText(`Placing ${ship.title} at ${cell.id} `)
+        player.board.placeShip(ship, cell.id, 'up')
+        this.changeFooterText(`Placing ${ship.title} at ${cell.id} `)
     }
 
     highlightCellsOnMouseHover(arrayOfSlotIDs, arrayOfSlotElements) {
@@ -52,19 +52,23 @@ export default class Gui {
     }
 
     addOccupiedToEachSlotsClass(arrayOfSlots) {
-        arrayOfSlots.forEach(slot => {
+        arrayOfSlots.forEach((slot) => {
             slot.classList.add('occupied')
-        });
+        })
     }
-    
+
     showShipPlacement(ship, player) {
         const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-        for (const cell of this.p1BoardGridCells) {
-            const slotIDsToHighlight = player.board.selectSlots(cell.id, ship.length)
+        for (let cell of this.p1BoardGridCells) {
+            let slotIDsToHighlight = player.board.selectSlots( //only sets value INITIALLY, but NOT after placing a ship
+                cell.id,
+                ship.length
+            )
             const slotElementsFromIDS = []
-            cell.addEventListener("mouseover", (event) => {
+            cell.addEventListener('mouseover', (event) => {
                 if (slotIDsToHighlight !== false) {
-                    if (slotElementsFromIDS.length === 0) { // Only adds to array if array is empty
+                    if (slotElementsFromIDS.length === 0) {
+                        // Only adds to array if array is empty
                         for (const slot of slotIDsToHighlight) {
                             // convert returned id's to actual html elements
                             slotElementsFromIDS.push(
@@ -73,30 +77,41 @@ export default class Gui {
                         }
                     }
                     for (const slot of slotElementsFromIDS) {
-                        slot.style.backgroundColor = 'rgb(0, 70, 127)'
+                        slot.classList.add('highlight')
                     }
                 }
-                console.log({slotElementsFromIDS})
             })
-            cell.addEventListener('mouseleave', (event) => { // to undo the color change
-                // if(player.board.slotsMap[cell.id].occupied === false) 
+            cell.addEventListener('mouseleave', (event) => {
+                // to undo the color change
+                // if(player.board.slotsMap[cell.id].occupied === false)
                 for (const slot of slotElementsFromIDS) {
-                    slot.style.backgroundColor = 'rgb(0, 35, 63)'
+                    slot.classList.remove('highlight')
                 }
             })
             cell.addEventListener('click', (event) => {
+                slotIDsToHighlight = player.board.selectSlots(
+                    // has to be called again to check if all the slots are valid for placement
+                    cell.id,
+                    ship.length
+                )
                 if (
                     slotIDsToHighlight !== false &&
                     player.board.slotsMap[cell.id].occupied === false
                 ) {
+                    const parent = cell.parentElement
                     player.board.placeShip(ship, cell.id, 'up')
                     this.changeFooterText(
                         `Ships placed: ${player.board.ships.length}`
                     )
                     this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
+                    slotElementsFromIDS.forEach((slot) => {
+                        const replacement = slot.cloneNode(true)
+                        slot.id = undefined
+                        console.log({replacement, slot})
+                        parent.replaceChild(replacement, slot)
+                    })
                 }
             })
-            }
         }
     }
-    
+}
