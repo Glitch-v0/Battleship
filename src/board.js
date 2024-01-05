@@ -10,6 +10,7 @@ export default class Board {
         this.receivedAttacks = []
         this.createBoardSlots()
         this.assignAllReferences()
+        this.orientation = 'up'
     }
 
     createBoardSlots() {
@@ -87,6 +88,32 @@ export default class Board {
         return keys[randomIndex]
     }
 
+    selectSlots(intialSlotCoordinate, numberOfSlots) {
+        // Initalizes next slot to check before running loop
+        let nextSlot = this.slotsMap[intialSlotCoordinate][this.orientation]
+        const slotsToSelect = [intialSlotCoordinate]
+
+        /* Checks if there is room for the ship
+        i = 1 since initial slot is provided by player */
+        for (let i = 1; i < numberOfSlots; i++) {
+            if (
+                // End if next slot doesn't exist
+                !this.validCoordinate(nextSlot)
+            ) {
+                return false
+            }
+            if (this.slotsMap[nextSlot].occupied === false) {
+                slotsToSelect.push(nextSlot)
+                nextSlot = this.slotsMap[nextSlot][this.orientation]
+            } else {
+                // Ship cannot fit here!
+                return false
+            }
+        }
+
+        return slotsToSelect
+    }
+
     placeShip(ship, intialSlotCoordinate, orientation = 'up') {
         // Checks if initial slot is occupied or non-existent
         if (
@@ -134,18 +161,27 @@ export default class Board {
         return true
     }
 
-    placeShips() {
-        let carrier = new Ship(5, undefined, 0, false, 'Carrier')
-        let battleship = new Ship(5, undefined, 0, false, 'Battleship')
-        let destroyer = new Ship(5, undefined, 0, false, 'Destroyer')
-        let submarine = new Ship(5, undefined, 0, false, 'Submarine')
-        let patrolBoat = new Ship(5, undefined, 0, false, 'Patrol Boat')
-        let shipsToPlace = [
-            carrier, battleship, destroyer, submarine, patrolBoat
+    arrayOfShips() {
+        const carrier = new Ship(5, undefined, 0, false, 'Carrier')
+        const battleship = new Ship(4, undefined, 0, false, 'Battleship')
+        const destroyer = new Ship(3, undefined, 0, false, 'Destroyer')
+        const submarine = new Ship(3, undefined, 0, false, 'Submarine')
+        const patrolBoat = new Ship(2, undefined, 0, false, 'Patrol Boat')
+        const shipsToPlace = [
+            carrier,
+            battleship,
+            destroyer,
+            submarine,
+            patrolBoat,
         ]
+        return shipsToPlace
+    }
+
+    placeShips() {
+        let shipsToPlace = this.arrayOfShips()
 
         for (let i = 0; i < shipsToPlace.length; i++) {
-            this.placeShip(shipsToPlace[i], `a${i}`, 'right')
+            this.placeShip(shipsToPlace[i], `a${i}`, 'up')
         }
     }
 

@@ -5,7 +5,7 @@ export default class Player {
         this.turn = turn
         this.name = name
         this.board = new Board()
-        this.board.placeShips()
+        //this.board.placeShips()
         this.unAttackedCoordinates = Object.keys(this.board.slotsMap)
     }
 
