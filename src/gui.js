@@ -35,6 +35,27 @@ export default class Gui {
             player.board.placeShip(ship, cell.id, 'up')
             this.changeFooterText(`Placing ${ship.title} at ${cell.id} `)
     }
+
+    highlightCellsOnMouseHover(arrayOfSlotIDs, arrayOfSlotElements) {
+        if (arrayOfSlotIDs !== false) {
+            if (arrayOfSlotElements.length === 0) {
+                // Only adds to array if array is empty
+                for (const slot of arrayOfSlotIDs) {
+                    // convert returned id's to actual html elements
+                    arrayOfSlotElements.push(document.getElementById(slot))
+                }
+            }
+            for (const slot of arrayOfSlotElements) {
+                slot.style.backgroundColor = 'rgb(0, 70, 127)'
+            }
+        }
+    }
+
+    addOccupiedToEachSlotsClass(arrayOfSlots) {
+        arrayOfSlots.forEach(slot => {
+            slot.classList.add('occupied')
+        });
+    }
     
     showShipPlacement(ship, player) {
         const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
@@ -58,13 +79,22 @@ export default class Gui {
                 console.log({slotElementsFromIDS})
             })
             cell.addEventListener('mouseleave', (event) => { // to undo the color change
+                // if(player.board.slotsMap[cell.id].occupied === false) 
                 for (const slot of slotElementsFromIDS) {
                     slot.style.backgroundColor = 'rgb(0, 35, 63)'
                 }
             })
             cell.addEventListener('click', (event) => {
-                player.board.placeShip(ship, cell.id, 'up')
-                this.changeFooterText(`Ships placed: ${player.board.ships.length}`)
+                if (
+                    slotIDsToHighlight !== false &&
+                    player.board.slotsMap[cell.id].occupied === false
+                ) {
+                    player.board.placeShip(ship, cell.id, 'up')
+                    this.changeFooterText(
+                        `Ships placed: ${player.board.ships.length}`
+                    )
+                    this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
+                }
             })
             }
         }
