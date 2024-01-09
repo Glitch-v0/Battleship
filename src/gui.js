@@ -79,7 +79,7 @@ export default class Gui {
                 let slotIDsToHighlight
                 cell.addEventListener('mouseover', (event) => {
                     currentShip = player.shipsToPlace[0]
-                    console.log(`Current ship: ${currentShip.title}`)
+                    slotElementsFromIDS = []
                     slotIDsToHighlight = player.board.selectSlots(
                         //only sets value INITIALLY, but NOT after placing a ship. returns an array or false
                         cell.id,
@@ -119,8 +119,6 @@ export default class Gui {
                             const replacement = slot.cloneNode(true)
                             slot.id = undefined
                             parent.replaceChild(replacement, slot)
-                            slot.classList.remove('highlight')
-                            console.log(`slot classlists: ${slot.classList}`)
                         })
                         player.shipsToPlace.shift()
                         if (player.shipsToPlace.length === 0) {
