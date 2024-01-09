@@ -57,61 +57,83 @@ export default class Gui {
         })
     }
 
-    showShipPlacement(ship, player) {
-        const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-        for (let cell of this.p1BoardGridCells) {
-            let slotIDsToHighlight = player.board.selectSlots( //only sets value INITIALLY, but NOT after placing a ship
-                cell.id,
-                ship.length
-            )
-            const slotElementsFromIDS = []
-            cell.addEventListener('mouseover', (event) => {
-                if (slotIDsToHighlight !== false) {
-                    if (slotElementsFromIDS.length === 0) {
-                        // Only adds to array if array is empty
-                        for (const slot of slotIDsToHighlight) {
-                            // convert returned id's to actual html elements
-                            slotElementsFromIDS.push(
-                                document.getElementById(slot)
-                            )
+    getSlotElementsFromIDs(arrayOfElementIDs) {
+        const slotElementsFromIDS = []
+    }
+
+    removeAllListeners() {
+       for (let slot of this.p1BoardGridCells) {
+            const parent = slot.parentElement
+            const replacement = slot.cloneNode(true)
+            slot.id = undefined
+            parent.replaceChild(replacement, slot)
+        };
+    }
+
+    showShipPlacement(player) {
+        let currentShip = player.shipsToPlace[0]
+        return new Promise((resolve, reject) => {
+            const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+            for (let cell of this.p1BoardGridCells) {
+                let slotElementsFromIDS = []
+                let slotIDsToHighlight
+                cell.addEventListener('mouseover', (event) => {
+                    currentShip = player.shipsToPlace[0]
+                    console.log(`Current ship: ${currentShip.title}`)
+                    slotIDsToHighlight = player.board.selectSlots(
+                        //only sets value INITIALLY, but NOT after placing a ship. returns an array or false
+                        cell.id,
+                        currentShip.length
+                    )
+                    if (slotIDsToHighlight !== false) { //if an array exists.
+                        if (slotElementsFromIDS.length === 0) {
+                            // Only adds to array if array is empty
+                            for (const slot of slotIDsToHighlight) {
+                                // convert returned id's to actual html elements
+                                slotElementsFromIDS.push(
+                                    document.getElementById(slot)
+                                )
+                            }
+                        }
+                        for (const slot of slotElementsFromIDS) {
+                            slot.classList.add('highlight')
                         }
                     }
+                })
+                cell.addEventListener('mouseleave', (event) => {
+                    // to undo the color change
                     for (const slot of slotElementsFromIDS) {
-                        slot.classList.add('highlight')
+                        slot.classList.remove('highlight')
                     }
-                }
-            })
-            cell.addEventListener('mouseleave', (event) => {
-                // to undo the color change
-                // if(player.board.slotsMap[cell.id].occupied === false)
-                for (const slot of slotElementsFromIDS) {
-                    slot.classList.remove('highlight')
-                }
-            })
-            cell.addEventListener('click', (event) => {
-                slotIDsToHighlight = player.board.selectSlots(
-                    // has to be called again to check if all the slots are valid for placement
-                    cell.id,
-                    ship.length
-                )
-                if (
-                    slotIDsToHighlight !== false &&
-                    player.board.slotsMap[cell.id].occupied === false
-                ) {
-                    const parent = cell.parentElement
-                    player.board.placeShip(ship, cell.id, 'up')
-                    this.changeFooterText(
-                        `Ships placed: ${player.board.ships.length}`
-                    )
-                    this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
-                    slotElementsFromIDS.forEach((slot) => {
-                        const replacement = slot.cloneNode(true)
-                        slot.id = undefined
-                        console.log({replacement, slot})
-                        parent.replaceChild(replacement, slot)
-                    })
-                }
-            })
-        }
+                })
+                cell.addEventListener('click', (event) => {
+                    if (
+                        slotIDsToHighlight !== false &&
+                        player.board.slotsMap[cell.id].occupied === false
+                    ) {
+                        const parent = cell.parentElement
+                        player.board.placeShip(currentShip, cell.id, 'up')
+                        console.log(`Placed ${currentShip.title} at coordinates (${currentShip.slots})`)
+                        this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
+                        slotElementsFromIDS.forEach((slot) => {
+                            const replacement = slot.cloneNode(true)
+                            slot.id = undefined
+                            parent.replaceChild(replacement, slot)
+                            slot.classList.remove('highlight')
+                            console.log(`slot classlists: ${slot.classList}`)
+                        })
+                        player.shipsToPlace.shift()
+                        if (player.shipsToPlace.length === 0) {
+                            this.removeAllListeners()
+                            resolve(true)
+                        } else { //update current ship and notify player of next placement
+                            currentShip = player.shipsToPlace[0]
+                            this.changeFooterText(`Now place your ${currentShip.title}. (${currentShip.length} slots)`)
+                            
+                        }
+                    }
+                })
+            }
+        })
     }
 }

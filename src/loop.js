@@ -7,11 +7,12 @@ import './styles.css'
 
 const p1 = new Player(false, 'Nathan')
 const p2 = new Player(false, 'Computer')
-const p1Ships = p1.board.arrayOfShips()
-const p2Ships = p2.board.arrayOfShips()
+p1.shipsToPlace = p1.board.arrayOfShips()
+p2.shipsToPlace = p2.board.arrayOfShips()
 const gui = new Gui()
-gui.changeFooterText("Let's play Battleship! First, place your Carrier (5 Tiles).")
-gui.showShipPlacement(p1Ships[0], p1);
+gui.changeFooterText('Now place your carrier. (5 slots)')
+gui.showShipPlacement(p1)
+
 // while (!p1.board.shipsAllSunk() || !p2.board.shipsAllSunk()) {
 //     p1.makeRandomAttack(p2.board)
 //     p2.makeRandomAttack(p1.board)
