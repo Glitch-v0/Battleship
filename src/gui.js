@@ -3,27 +3,27 @@ export default class Gui {
         this.p1Board = document.getElementById('p1Board')
         this.p2Board = document.getElementById('p2Board')
         this.footer = document.getElementById('footer')
-        this.createGridCells()
-        this.p1BoardGridCells = this.p1Board.children
-        this.p2BoardGridCells = this.p2Board.children
+        this.createGridSlots()
+        this.p1BoardGridSlots = this.p1Board.children
+        this.p2BoardGridSlots = this.p2Board.children
     }
 
-    createGridCells() {
+    createGridSlots() {
         const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
         for (let i = 9; i >= 0; i--) {
             //Sets up 0 to be the bottom of the grid, 9 at the top
             for (let j = 0; j < 10; j++) {
-                const p1GridCell = document.createElement('div')
-                p1GridCell.id = `${alphabet[j]}${i}p1`
-                p1GridCell.classList.add('gridCell')
-                p1GridCell.classList.add('p1GridCell')
-                this.p1Board.appendChild(p1GridCell)
+                const p1GridSlot = document.createElement('div')
+                p1GridSlot.id = `${alphabet[j]}${i}p1`
+                p1GridSlot.classList.add('gridSlot')
+                p1GridSlot.classList.add('p1GridSlot')
+                this.p1Board.appendChild(p1GridSlot)
 
-                const p2GridCell = document.createElement('div')
-                p2GridCell.id = `${alphabet[j]}${i}p2`
-                p2GridCell.classList.add('gridCell')
-                p2GridCell.classList.add('p2GridCell')
-                this.p2Board.appendChild(p2GridCell)
+                const p2GridSlot = document.createElement('div')
+                p2GridSlot.id = `${alphabet[j]}${i}p2`
+                p2GridSlot.classList.add('gridSlot')
+                p2GridSlot.classList.add('p2GridSlot')
+                this.p2Board.appendChild(p2GridSlot)
             }
         }
     }
@@ -61,18 +61,18 @@ export default class Gui {
         this.changeFooterText(
             `Now place your ${currentShip.title}. (${currentShip.length} slots)`
         )
-        const currentGridCells =
+        const currentGridSlots =
             player.name === 'Player 1'
-                ? this.p1BoardGridCells
-                : this.p2BoardGridCells
+                ? this.p1BoardGridSlots
+                : this.p2BoardGridSlots
         return new Promise((resolve, reject) => {
             const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-            for (let cell of currentGridCells) {
-                const currentID = cell.id.substring(0, 2)
-                const playerIDTag = cell.id.substring(2)
+            for (let slot of currentGridSlots) {
+                const currentID = slot.id.substring(0, 2)
+                const playerIDTag = slot.id.substring(2)
                 let slotElementsFromIDS
                 let slotIDsToHighlight
-                cell.addEventListener('mouseover', (event) => {
+                slot.addEventListener('mouseover', (event) => {
                     currentShip = player.shipsToPlace[0]
                     slotElementsFromIDS = []
                     slotIDsToHighlight = player.board.selectSlots(
@@ -87,7 +87,9 @@ export default class Gui {
                             for (const slot of slotIDsToHighlight) {
                                 // convert returned id's to actual html elements
                                 slotElementsFromIDS.push(
-                                    document.getElementById(`${slot+playerIDTag}`)
+                                    document.getElementById(
+                                        `${slot + playerIDTag}`
+                                    )
                                 )
                             }
                         }
@@ -96,18 +98,18 @@ export default class Gui {
                         }
                     }
                 })
-                cell.addEventListener('mouseleave', (event) => {
+                slot.addEventListener('mouseleave', (event) => {
                     // to undo the color change
                     for (const slot of slotElementsFromIDS) {
                         slot.classList.remove('highlight')
                     }
                 })
-                cell.addEventListener('click', (event) => {
+                slot.addEventListener('click', (event) => {
                     if (
                         slotIDsToHighlight !== false &&
                         player.board.slotsMap[currentID].occupied === false
                     ) {
-                        const parent = cell.parentElement
+                        const parent = slot.parentElement
                         player.board.placeShip(currentShip, currentID, 'up')
                         console.log(
                             `Placed ${currentShip.title} at coordinates (${currentShip.slots})`
@@ -120,7 +122,7 @@ export default class Gui {
                         })
                         player.shipsToPlace.shift()
                         if (player.shipsToPlace.length === 0) {
-                            this.removeAllListeners(currentGridCells)
+                            this.removeAllListeners(currentGridSlots)
                             resolve(true)
                         } else {
                             //update current ship and notify player of next placement
@@ -142,17 +144,27 @@ export default class Gui {
         boardCover.id = 'cover'
 
         //Set dimensions and position
-         boardCover.style.width = `${boardRect.width*1.05}px`
-         boardCover.style.height = `${boardRect.height*1.05}px`
-         boardCover.style.top = `${boardRect.top}px`
-         boardCover.style.left = `${boardRect.left}px`
+        boardCover.style.width = `${boardRect.width * 1.05}px`
+        boardCover.style.height = `${boardRect.height * 1.05}px`
+        boardCover.style.top = `${boardRect.top}px`
+        boardCover.style.left = `${boardRect.left}px`
 
-         document.body.appendChild(boardCover)
+        document.body.appendChild(boardCover)
+    }
 
+    hideShips(slots) {
+        Array.from(slots).forEach((slot) => {
+            slot.classList.add('hide')
+        })
+    }
+
+    revealShips(slots) {
+        Array.from(slots).forEach((slot) => {
+            slot.classList.remove('hide')
+        })
     }
 
     removeCoverBoard() {
-        let boardToRemove = document.getElementById('cover')
-        document.body.removeChild(boardToRemove)
+        document.body.removeChild(document.getElementById('cover'))
     }
 }

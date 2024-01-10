@@ -18,14 +18,14 @@ gui.showShipPlacement(p1)
         )
     )
     .then(() => gui.showShipPlacement(p2))
-    .then(() => gui.coverBoard(gui.p2Board))
+    .then(() => gui.hideShips(gui.p2BoardGridSlots))
+    // .then(() => gui.coverBoard(gui.p2Board))
     .then(() =>
         gui.changeFooterTextAndConfirm(
             `CHANGE: The game is about to begin. It is now ${p1.name}'s turn. Click this message to continue.`
         )
     )
     .then(() => gui.removeCoverBoard())
-
 
 // while (!p1.board.shipsAllSunk() || !p2.board.shipsAllSunk()) {
 //     p1.makeRandomAttack(p2.board)
