@@ -14,15 +14,16 @@ export default class Gui {
             //Sets up 0 to be the bottom of the grid, 9 at the top
             for (let j = 0; j < 10; j++) {
                 const p1GridCell = document.createElement('div')
-                const p2GridCell = document.createElement('div')
-                p1GridCell.id = `${alphabet[j]}${i}`
+                p1GridCell.id = `${alphabet[j]}${i}p1`
                 p1GridCell.classList.add('gridCell')
                 p1GridCell.classList.add('p1GridCell')
-                p2GridCell.id = `${alphabet[j]}${i}`
+                this.p1Board.appendChild(p1GridCell)
+
+                const p2GridCell = document.createElement('div')
+                p2GridCell.id = `${alphabet[j]}${i}p2`
                 p2GridCell.classList.add('gridCell')
                 p2GridCell.classList.add('p2GridCell')
-                p1Board.appendChild(p1GridCell)
-                p2Board.appendChild(p2GridCell)
+                this.p2Board.appendChild(p2GridCell)
             }
         }
     }
@@ -31,67 +32,53 @@ export default class Gui {
         footer.innerText = text
     }
 
-    placeShipChangeFooterText(player, ship, cell) {
-        player.board.placeShip(ship, cell.id, 'up')
-        this.changeFooterText(`Placing ${ship.title} at ${cell.id} `)
-    }
-
-    highlightCellsOnMouseHover(arrayOfSlotIDs, arrayOfSlotElements) {
-        if (arrayOfSlotIDs !== false) {
-            if (arrayOfSlotElements.length === 0) {
-                // Only adds to array if array is empty
-                for (const slot of arrayOfSlotIDs) {
-                    // convert returned id's to actual html elements
-                    arrayOfSlotElements.push(document.getElementById(slot))
-                }
-            }
-            for (const slot of arrayOfSlotElements) {
-                slot.style.backgroundColor = 'rgb(0, 70, 127)'
-            }
-        }
-    }
-
     addOccupiedToEachSlotsClass(arrayOfSlots) {
         arrayOfSlots.forEach((slot) => {
             slot.classList.add('occupied')
         })
     }
 
-    getSlotElementsFromIDs(arrayOfElementIDs) {
-        const slotElementsFromIDS = []
-    }
-
-    removeAllListeners() {
-       for (let slot of this.p1BoardGridCells) {
+    removeAllListeners(slotsToRemoveListeners) {
+        for (let slot of slotsToRemoveListeners) {
             const parent = slot.parentElement
             const replacement = slot.cloneNode(true)
             slot.id = undefined
             parent.replaceChild(replacement, slot)
-        };
+        }
     }
 
     showShipPlacement(player) {
         let currentShip = player.shipsToPlace[0]
+        this.changeFooterText(
+            `Now place your ${currentShip.title}. (${currentShip.length} slots)`
+        )
+        const currentGridCells =
+            player.name === 'Player 1'
+                ? this.p1BoardGridCells
+                : this.p2BoardGridCells
         return new Promise((resolve, reject) => {
             const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-            for (let cell of this.p1BoardGridCells) {
-                let slotElementsFromIDS = []
+            for (let cell of currentGridCells) {
+                const currentID = cell.id.substring(0, 2)
+                const playerIDTag = cell.id.substring(2)
+                let slotElementsFromIDS
                 let slotIDsToHighlight
                 cell.addEventListener('mouseover', (event) => {
                     currentShip = player.shipsToPlace[0]
                     slotElementsFromIDS = []
                     slotIDsToHighlight = player.board.selectSlots(
                         //only sets value INITIALLY, but NOT after placing a ship. returns an array or false
-                        cell.id,
+                        currentID,
                         currentShip.length
                     )
-                    if (slotIDsToHighlight !== false) { //if an array exists.
+                    if (slotIDsToHighlight !== false) {
+                        //if an array exists.
                         if (slotElementsFromIDS.length === 0) {
                             // Only adds to array if array is empty
                             for (const slot of slotIDsToHighlight) {
                                 // convert returned id's to actual html elements
                                 slotElementsFromIDS.push(
-                                    document.getElementById(slot)
+                                    document.getElementById(`${slot+playerIDTag}`)
                                 )
                             }
                         }
@@ -109,11 +96,13 @@ export default class Gui {
                 cell.addEventListener('click', (event) => {
                     if (
                         slotIDsToHighlight !== false &&
-                        player.board.slotsMap[cell.id].occupied === false
+                        player.board.slotsMap[currentID].occupied === false
                     ) {
                         const parent = cell.parentElement
-                        player.board.placeShip(currentShip, cell.id, 'up')
-                        console.log(`Placed ${currentShip.title} at coordinates (${currentShip.slots})`)
+                        player.board.placeShip(currentShip, currentID, 'up')
+                        console.log(
+                            `Placed ${currentShip.title} at coordinates (${currentShip.slots})`
+                        )
                         this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
                         slotElementsFromIDS.forEach((slot) => {
                             const replacement = slot.cloneNode(true)
@@ -122,12 +111,14 @@ export default class Gui {
                         })
                         player.shipsToPlace.shift()
                         if (player.shipsToPlace.length === 0) {
-                            this.removeAllListeners()
+                            this.removeAllListeners(currentGridCells)
                             resolve(true)
-                        } else { //update current ship and notify player of next placement
+                        } else {
+                            //update current ship and notify player of next placement
                             currentShip = player.shipsToPlace[0]
-                            this.changeFooterText(`Now place your ${currentShip.title}. (${currentShip.length} slots)`)
-                            
+                            this.changeFooterText(
+                                `Now place your ${currentShip.title}. (${currentShip.length} slots)`
+                            )
                         }
                     }
                 })

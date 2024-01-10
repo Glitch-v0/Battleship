@@ -1,7 +1,7 @@
 import Board from './board'
 
 export default class Player {
-    constructor(turn = false, name = 'human') {
+    constructor(turn = false, name = 'Computer') {
         this.turn = turn
         this.name = name
         this.board = new Board()
