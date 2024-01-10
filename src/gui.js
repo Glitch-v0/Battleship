@@ -29,7 +29,16 @@ export default class Gui {
     }
 
     changeFooterText(text) {
-        footer.innerText = text
+        this.footer.innerText = text
+    }
+
+    changeFooterTextAndConfirm(text) {
+        this.footer.innerText = text
+        return new Promise((resolve, reject) => {
+            this.footer.addEventListener('click', (event) => {
+                resolve()
+            })
+        })
     }
 
     addOccupiedToEachSlotsClass(arrayOfSlots) {
@@ -124,5 +133,26 @@ export default class Gui {
                 })
             }
         })
+    }
+
+    coverBoard(board) {
+        const boardCover = document.createElement('div')
+        const boardRect = board.getBoundingClientRect()
+
+        boardCover.id = 'cover'
+
+        //Set dimensions and position
+         boardCover.style.width = `${boardRect.width*1.05}px`
+         boardCover.style.height = `${boardRect.height*1.05}px`
+         boardCover.style.top = `${boardRect.top}px`
+         boardCover.style.left = `${boardRect.left}px`
+
+         document.body.appendChild(boardCover)
+
+    }
+
+    removeCoverBoard() {
+        let boardToRemove = document.getElementById('cover')
+        document.body.removeChild(boardToRemove)
     }
 }
