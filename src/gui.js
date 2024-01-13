@@ -8,6 +8,24 @@ export default class Gui {
         this.p2BoardGridSlots = this.p2Board.children
     }
 
+    createRotationArrows() {
+
+        const horizontalArrow = document.createElement('button')
+        horizontalArrow.innerText = '→'
+        horizontalArrow.classList.add('arrow')
+        horizontalArrow.id = 'horizontalArrow'
+        
+        const verticalArrow = document.createElement('button')
+        verticalArrow.innerText = '↑'
+        verticalArrow.classList.add('arrow')
+        verticalArrow.id = 'verticalArrow'
+
+        const parent = document.getElementById('boardContainers')
+        parent.appendChild(verticalArrow)
+        parent.appendChild(horizontalArrow)
+
+
+    }
     createGridSlots() {
         const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
         for (let i = 9; i >= 0; i--) {

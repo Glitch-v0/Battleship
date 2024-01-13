@@ -10,6 +10,7 @@ const p2 = new Player(false, 'Player 2')
 p1.shipsToPlace = p1.board.arrayOfShips()
 p2.shipsToPlace = p2.board.arrayOfShips()
 const gui = new Gui()
+gui.createRotationArrows()
 gui.showShipPlacement(p1)
     .then(() => gui.coverBoard(gui.p1Board))
     .then(() =>
