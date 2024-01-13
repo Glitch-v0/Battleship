@@ -26,5 +26,8 @@ gui.showShipPlacement(p1)
             `CHANGE: The game is about to begin. It is now ${p1.name}'s turn. Click this message to continue.`
         )
     )
-    .then(() => gui.removeCoverBoard())
+    .then(() => {
+        gui.removeArrows()
+        gui.removeCoverBoard()
+    })
     .then(() => gui.takeTurn(p1, p2))

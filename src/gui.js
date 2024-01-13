@@ -9,12 +9,11 @@ export default class Gui {
     }
 
     createRotationArrows() {
-
         const horizontalArrow = document.createElement('button')
         horizontalArrow.innerText = '→'
         horizontalArrow.classList.add('arrow')
         horizontalArrow.id = 'horizontalArrow'
-        
+
         const verticalArrow = document.createElement('button')
         verticalArrow.innerText = '↑'
         verticalArrow.classList.add('arrow')
@@ -23,8 +22,6 @@ export default class Gui {
         const parent = document.getElementById('boardContainers')
         parent.appendChild(verticalArrow)
         parent.appendChild(horizontalArrow)
-
-
     }
 
     arrowRotation(player) {
@@ -37,6 +34,14 @@ export default class Gui {
             player.board.orientation = 'up'
         })
     }
+
+    removeArrows() {
+        const arrow1 = document.getElementById('horizontalArrow')
+        const arrow2 = document.getElementById('verticalArrow')
+        arrow1.remove()
+        arrow2.remove()
+    }
+
     createGridSlots() {
         const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
         for (let i = 9; i >= 0; i--) {
@@ -86,7 +91,15 @@ export default class Gui {
     }
 
     showShipPlacement(player) {
-        this.arrowRotation(player)
+        let currentBoard //visual help player see which board is theirs
+        if (player.name === 'Player 1') {
+            currentBoard = this.p1Board
+        } else {
+            currentBoard = this.p2Board
+        }
+        currentBoard.style.border = '2px solid rgb(0, 102, 255)'
+
+        this.arrowRotation(player) // enables current player to rotate ship during placement
         let currentShip = player.shipsToPlace[0]
         this.changeFooterText(
             `Now place your ${currentShip.title}. (${currentShip.length} slots)`
@@ -140,7 +153,11 @@ export default class Gui {
                         player.board.slotsMap[currentID].occupied === false
                     ) {
                         const parent = slot.parentElement
-                        player.board.placeShip(currentShip, currentID, player.board.orientation)
+                        player.board.placeShip(
+                            currentShip,
+                            currentID,
+                            player.board.orientation
+                        )
                         this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
                         slotElementsFromIDS.forEach((slot) => {
                             const replacement = slot.cloneNode(true)
@@ -149,6 +166,7 @@ export default class Gui {
                         })
                         player.shipsToPlace.shift()
                         if (player.shipsToPlace.length === 0) {
+                            currentBoard.style.border = 'none'
                             this.removeAllListeners(currentGridSlots)
                             resolve(true)
                         } else {
@@ -235,7 +253,9 @@ export default class Gui {
     takeTurn(currentPlayer, otherPlayer) {
         return new Promise((resolve) => {
             this.removeCoverBoard()
-            this.changeFooterText(`${currentPlayer.name}, click on the enemy board to make an attack`)
+            this.changeFooterText(
+                `${currentPlayer.name}, click on the enemy board to make an attack`
+            )
             let currentBoard
             let currentPlayerSlots
             let otherPlayersSlots
@@ -252,29 +272,32 @@ export default class Gui {
             }
             this.hideShips(otherPlayersSlots)
             this.revealShips(currentPlayerSlots)
-            this.listenForAttack(otherPlayersSlots, currentPlayer, otherPlayer)
-                .then(() => {
-                    this.removeAllListeners(otherPlayersSlots)
-                    let playerWon = otherPlayer.board.shipsAllSunk()
-                    console.log(playerWon)
-                    if (playerWon) {
-                        console.log('Running the win if statement')
-                        this.changeFooterTextAndConfirm(
-                            `${currentPlayer.name} wins!`
-                        ).then(() => {
-                            console.log('The game should be done now')
-                            return resolve(true) //game ends
-                        })
-                    } else {
-                        this.hideShips(currentPlayer)
-                        this.coverBoard(currentBoard)
-                        this.changeFooterTextAndConfirm(
-                            `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
-                        ).then(() => {
-                            resolve(this.takeTurn(otherPlayer, currentPlayer)) //Loops around
-                        })
-                    }
-                })
+            this.listenForAttack(
+                otherPlayersSlots,
+                currentPlayer,
+                otherPlayer
+            ).then(() => {
+                this.removeAllListeners(otherPlayersSlots)
+                let playerWon = otherPlayer.board.shipsAllSunk()
+                console.log(playerWon)
+                if (playerWon) {
+                    console.log('Running the win if statement')
+                    this.changeFooterTextAndConfirm(
+                        `${currentPlayer.name} wins!`
+                    ).then(() => {
+                        console.log('The game should be done now')
+                        return resolve(true) //game ends
+                    })
+                } else {
+                    this.hideShips(currentPlayer)
+                    this.coverBoard(currentBoard)
+                    this.changeFooterTextAndConfirm(
+                        `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
+                    ).then(() => {
+                        resolve(this.takeTurn(otherPlayer, currentPlayer)) //Loops around
+                    })
+                }
+            })
         })
     }
 }
