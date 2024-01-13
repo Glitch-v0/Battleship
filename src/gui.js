@@ -162,7 +162,9 @@ export default class Gui {
     }
 
     removeCoverBoard() {
-        document.body.removeChild(document.getElementById('cover'))
+        if (document.getElementById('cover')) {
+            document.body.removeChild(document.getElementById('cover'))
+        }
     }
 
     listenForAttack(slots, currentPlayer, otherPlayer) {
@@ -178,7 +180,6 @@ export default class Gui {
                     )
                     let shipPresent =
                         otherPlayer.board.slotsMap[slotID].occupied
-                    console.log({validAttack, shipPresent})
                     if (validAttack && shipPresent) {
                         slot.classList.add('hit')
                         this.changeFooterTextAndConfirm(
@@ -188,18 +189,14 @@ export default class Gui {
                         slot.classList.add('attacked')
                         this.changeFooterTextAndConfirm(
                             'You attacked and missed! (Click to continue)'
-                        )
-                        console.log('Promised resolved!')
-                        resolve(true)
+                        ).then(() => resolve(true))
                     }
                 })
                 slot.addEventListener('mouseover', () => {
-                    console.log('Hovered over the slot!')
-                    slot.classList.add('highlight')
+                    slot.classList.add('attackHover')
                 })
                 slot.addEventListener('mouseleave', () => {
-                    console.log('Left the slot!')
-                    slot.classList.remove('highlight')
+                    slot.classList.remove('attackHover')
                 })
             })
         })
@@ -207,31 +204,46 @@ export default class Gui {
 
     takeTurn(currentPlayer, otherPlayer) {
         return new Promise((resolve) => {
+            this.removeCoverBoard()
             this.changeFooterText(`${currentPlayer.name}, click on the enemy board to make an attack`)
+            let currentBoard
+            let currentPlayerSlots
             let otherPlayersSlots
             if (currentPlayer.name === 'Player 1') {
                 //Player 1's turn
+                currentBoard = this.p1Board
+                currentPlayerSlots = this.p1BoardGridSlots
                 otherPlayersSlots = this.p2BoardGridSlots
             } else {
                 //Player 2's turn
+                currentBoard = this.p2Board
+                currentPlayerSlots = this.p2BoardGridSlots
                 otherPlayersSlots = this.p1BoardGridSlots
             }
             this.hideShips(otherPlayersSlots)
-            this.revealShips(currentPlayer)
+            this.revealShips(currentPlayerSlots)
             this.listenForAttack(otherPlayersSlots, currentPlayer, otherPlayer)
                 .then(() => {
                     this.removeAllListeners(otherPlayersSlots)
                     let playerWon = otherPlayer.board.shipsAllSunk()
+                    console.log(playerWon)
                     if (playerWon) {
+                        console.log('Running the win if statement')
                         this.changeFooterTextAndConfirm(
                             `${currentPlayer.name} wins!`
-                        )
+                        ).then(() => {
+                            console.log('The game should be done now')
+                            return resolve(true) //game ends
+                        })
+                    } else {
+                        this.hideShips(currentPlayer)
+                        this.coverBoard(currentBoard)
+                        this.changeFooterTextAndConfirm(
+                            `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
+                        ).then(() => {
+                            resolve(this.takeTurn(otherPlayer, currentPlayer)) //Loops around
+                        })
                     }
-                    this.hideShips(currentPlayer)
-                    this.changeFooterTextAndConfirm(
-                        `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
-                    )
-                    resolve(this.takeTurn(otherPlayer, currentPlayer))
                 })
         })
     }

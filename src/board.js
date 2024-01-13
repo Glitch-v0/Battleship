@@ -161,12 +161,12 @@ export default class Board {
         return true
     }
 
-    arrayOfShips() {
-        const carrier = new Ship(5, undefined, 0, false, 'Carrier')
-        const battleship = new Ship(4, undefined, 0, false, 'Battleship')
-        const destroyer = new Ship(3, undefined, 0, false, 'Destroyer')
-        const submarine = new Ship(3, undefined, 0, false, 'Submarine')
-        const patrolBoat = new Ship(2, undefined, 0, false, 'Patrol Boat')
+    arrayOfShips() { //values are normally 5, 4, 3, 3, 2!!!
+        const carrier = new Ship(1, undefined, 0, false, 'Carrier')
+        const battleship = new Ship(1, undefined, 0, false, 'Battleship')
+        const destroyer = new Ship(1, undefined, 0, false, 'Destroyer')
+        const submarine = new Ship(1, undefined, 0, false, 'Submarine')
+        const patrolBoat = new Ship(1, undefined, 0, false, 'Patrol Boat')
         const shipsToPlace = [
             carrier,
             battleship,
