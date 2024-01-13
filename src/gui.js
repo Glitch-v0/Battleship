@@ -26,6 +26,17 @@ export default class Gui {
 
 
     }
+
+    arrowRotation(player) {
+        const horizontalArrow = document.getElementById('horizontalArrow')
+        const verticalArrow = document.getElementById('verticalArrow')
+        horizontalArrow.addEventListener('click', () => {
+            player.board.orientation = 'left'
+        })
+        verticalArrow.addEventListener('click', () => {
+            player.board.orientation = 'up'
+        })
+    }
     createGridSlots() {
         const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
         for (let i = 9; i >= 0; i--) {
@@ -75,6 +86,7 @@ export default class Gui {
     }
 
     showShipPlacement(player) {
+        this.arrowRotation(player)
         let currentShip = player.shipsToPlace[0]
         this.changeFooterText(
             `Now place your ${currentShip.title}. (${currentShip.length} slots)`
@@ -128,7 +140,7 @@ export default class Gui {
                         player.board.slotsMap[currentID].occupied === false
                     ) {
                         const parent = slot.parentElement
-                        player.board.placeShip(currentShip, currentID, 'up')
+                        player.board.placeShip(currentShip, currentID, player.board.orientation)
                         this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
                         slotElementsFromIDS.forEach((slot) => {
                             const replacement = slot.cloneNode(true)
@@ -159,8 +171,8 @@ export default class Gui {
         boardCover.id = 'cover'
 
         //Set dimensions and position
-        boardCover.style.width = `${boardRect.width * 1.05}px`
-        boardCover.style.height = `${boardRect.height * 1.05}px`
+        boardCover.style.width = `${boardRect.width * 1.01}px`
+        boardCover.style.height = `${boardRect.height * 1.02}px`
         boardCover.style.top = `${boardRect.top}px`
         boardCover.style.left = `${boardRect.left}px`
 
