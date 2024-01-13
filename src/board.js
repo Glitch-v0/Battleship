@@ -206,7 +206,6 @@ export default class Board {
             if (ship.slots.includes(coordinate)) {
                 // Attack hits
                 ship.hit()
-                ship.isSunk()
             }
         })
 

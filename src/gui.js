@@ -216,11 +216,9 @@ export default class Gui {
     }
 
     listenForAttack(slots, currentPlayer, otherPlayer) {
-        console.log(`Listening for attack from ${currentPlayer.name}`)
         return new Promise((resolve) => {
             Array.from(slots).forEach((slot) => {
                 slot.addEventListener('click', () => {
-                    console.log('Clicked the slot!')
                     let slotID = slot.id.substring(0, 2)
                     let validAttack = currentPlayer.makeAttack(
                         otherPlayer.board,
@@ -229,11 +227,30 @@ export default class Gui {
                     let shipPresent =
                         otherPlayer.board.slotsMap[slotID].occupied
                     if (validAttack && shipPresent) {
-                        slot.classList.add('hit')
-                        this.changeFooterTextAndConfirm(
-                            'You attacked and hit an enemy ship! (Click to continue)'
-                        ).then(() => resolve(true))
+                        // Attack hit
+                        otherPlayer.board.ships.forEach((ship) => {
+                            if (ship.slots.includes(slotID)) { //to only apply actions to the one ship
+                                if (ship.isSunk()) {
+                                    //Sunk or just a hit
+                                    slot.classList.add('hit')
+                                    console.log(
+                                        { ship },
+                                        { slotID },
+                                        ship.slots.includes(slotID)
+                                    )
+                                    this.changeFooterTextAndConfirm(
+                                        `You sank ${otherPlayer.name}'s ${ship.title}! (Click to continue)`
+                                    ).then(() => resolve(true))
+                                } else {
+                                    slot.classList.add('hit')
+                                    this.changeFooterTextAndConfirm(
+                                        'You attacked and hit an enemy ship! (Click to continue)'
+                                    ).then(() => resolve(true))
+                                }
+                            }
+                        })
                     } else if (validAttack && !shipPresent) {
+                        // Attack missed
                         slot.classList.add('attacked')
                         this.changeFooterTextAndConfirm(
                             'You attacked and missed! (Click to continue)'
