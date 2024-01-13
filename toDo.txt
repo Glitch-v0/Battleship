@@ -1,6 +1,12 @@
--Place ships on player's board
---Ships can be placed horizontally or vertically
---Use length to determine how which slots to check
---Must check if each needed space is already occupied or null
---Push occupied slots to array
---Loop over occupied slots,  setting each .occupied to true
+Always applies:
+-Attacked areas are visible to both players (different mark for occupied slot)
+
+Every turn
+-Make sure enemy ships are hidden. DONE
+-Reveal player ships. DONE
+-Enemy board slots listens for attack. DONE
+-Player picks a slot to attack. DONE
+-Check if slot in other player's board is .occupied DONE
+-Slot is marked either as attacked, and if hit, also hit DONE
+-Check if all enemy ships are sunk. If true, player wins. DONE
+-Hide player ships, send pass message DONE

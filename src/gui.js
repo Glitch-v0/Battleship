@@ -34,7 +34,7 @@ export default class Gui {
 
     changeFooterTextAndConfirm(text) {
         this.footer.innerText = text
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.footer.addEventListener('click', (event) => {
                 resolve()
             })
@@ -47,8 +47,8 @@ export default class Gui {
         })
     }
 
-    removeAllListeners(slotsToRemoveListeners) {
-        for (let slot of slotsToRemoveListeners) {
+    removeAllListeners(slots) {
+        for (let slot of slots) {
             const parent = slot.parentElement
             const replacement = slot.cloneNode(true)
             slot.id = undefined
@@ -111,9 +111,6 @@ export default class Gui {
                     ) {
                         const parent = slot.parentElement
                         player.board.placeShip(currentShip, currentID, 'up')
-                        console.log(
-                            `Placed ${currentShip.title} at coordinates (${currentShip.slots})`
-                        )
                         this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
                         slotElementsFromIDS.forEach((slot) => {
                             const replacement = slot.cloneNode(true)
@@ -166,5 +163,76 @@ export default class Gui {
 
     removeCoverBoard() {
         document.body.removeChild(document.getElementById('cover'))
+    }
+
+    listenForAttack(slots, currentPlayer, otherPlayer) {
+        console.log(`Listening for attack from ${currentPlayer.name}`)
+        return new Promise((resolve) => {
+            Array.from(slots).forEach((slot) => {
+                slot.addEventListener('click', () => {
+                    console.log('Clicked the slot!')
+                    let slotID = slot.id.substring(0, 2)
+                    let validAttack = currentPlayer.makeAttack(
+                        otherPlayer.board,
+                        slotID
+                    )
+                    let shipPresent =
+                        otherPlayer.board.slotsMap[slotID].occupied
+                    console.log({validAttack, shipPresent})
+                    if (validAttack && shipPresent) {
+                        slot.classList.add('hit')
+                        this.changeFooterTextAndConfirm(
+                            'You attacked and hit an enemy ship! (Click to continue)'
+                        ).then(() => resolve(true))
+                    } else if (validAttack && !shipPresent) {
+                        slot.classList.add('attacked')
+                        this.changeFooterTextAndConfirm(
+                            'You attacked and missed! (Click to continue)'
+                        )
+                        console.log('Promised resolved!')
+                        resolve(true)
+                    }
+                })
+                slot.addEventListener('mouseover', () => {
+                    console.log('Hovered over the slot!')
+                    slot.classList.add('highlight')
+                })
+                slot.addEventListener('mouseleave', () => {
+                    console.log('Left the slot!')
+                    slot.classList.remove('highlight')
+                })
+            })
+        })
+    }
+
+    takeTurn(currentPlayer, otherPlayer) {
+        return new Promise((resolve) => {
+            this.changeFooterText(`${currentPlayer.name}, click on the enemy board to make an attack`)
+            let otherPlayersSlots
+            if (currentPlayer.name === 'Player 1') {
+                //Player 1's turn
+                otherPlayersSlots = this.p2BoardGridSlots
+            } else {
+                //Player 2's turn
+                otherPlayersSlots = this.p1BoardGridSlots
+            }
+            this.hideShips(otherPlayersSlots)
+            this.revealShips(currentPlayer)
+            this.listenForAttack(otherPlayersSlots, currentPlayer, otherPlayer)
+                .then(() => {
+                    this.removeAllListeners(otherPlayersSlots)
+                    let playerWon = otherPlayer.board.shipsAllSunk()
+                    if (playerWon) {
+                        this.changeFooterTextAndConfirm(
+                            `${currentPlayer.name} wins!`
+                        )
+                    }
+                    this.hideShips(currentPlayer)
+                    this.changeFooterTextAndConfirm(
+                        `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
+                    )
+                    resolve(this.takeTurn(otherPlayer, currentPlayer))
+                })
+        })
     }
 }

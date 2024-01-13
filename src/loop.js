@@ -26,11 +26,5 @@ gui.showShipPlacement(p1)
         )
     )
     .then(() => gui.removeCoverBoard())
-
-// while (!p1.board.shipsAllSunk() || !p2.board.shipsAllSunk()) {
-//     p1.makeRandomAttack(p2.board)
-//     p2.makeRandomAttack(p1.board)
-// }
-
-// const winner = p1.board.shipsAllSunk ? `${p2.name} wins!` : `${p1.name} wins!`
-// console.log(winner)
+    .then(() => gui.takeTurn(p1, p2))
+    .then(() => gui.takeTurn(p2, p1))
