@@ -6,7 +6,7 @@ export default class Player {
         this.name = name
         this.board = new Board()
         this.unAttackedCoordinates = Object.keys(this.board.slotsMap)
-        this.shipsToPlace
+        this.shipsToPlace = this.board.arrayOfShips()
     }
 
     makeAttack(enemyBoard, attackCoordinate) {

@@ -1,11 +1,14 @@
+import Player from './player'
+
 export default class Gui {
     constructor() {
         this.p1Board = document.getElementById('p1Board')
         this.p2Board = document.getElementById('p2Board')
         this.footer = document.getElementById('footer')
-        this.createGridSlots()
         this.p1BoardGridSlots = this.p1Board.children
         this.p2BoardGridSlots = this.p2Board.children
+        this.p1
+        this.p2
     }
 
     createRotationArrows() {
@@ -28,7 +31,7 @@ export default class Gui {
         const horizontalArrow = document.getElementById('horizontalArrow')
         const verticalArrow = document.getElementById('verticalArrow')
         horizontalArrow.addEventListener('click', () => {
-            player.board.orientation = 'left'
+            player.board.orientation = 'right'
         })
         verticalArrow.addEventListener('click', () => {
             player.board.orientation = 'up'
@@ -62,6 +65,13 @@ export default class Gui {
         }
     }
 
+    removeGridSlots() {
+        const slots = document.getElementsByClassName('gridSlot')
+        Array.from(slots).forEach((slot) => {
+            slot.remove()
+        })
+    }
+
     changeFooterText(text) {
         this.footer.innerText = text
     }
@@ -69,9 +79,20 @@ export default class Gui {
     changeFooterTextAndConfirm(text) {
         this.footer.innerText = text
         return new Promise((resolve) => {
-            this.footer.addEventListener('click', (event) => {
-                resolve()
-            })
+            this.footer.addEventListener(
+                'click',
+                () => {
+                    resolve()
+                },
+                { once: true }
+            )
+            document.body.addEventListener(
+                'keydown',
+                () => {
+                    resolve()
+                },
+                { once: true }
+            )
         })
     }
 
@@ -87,6 +108,136 @@ export default class Gui {
             const replacement = slot.cloneNode(true)
             slot.id = undefined
             parent.replaceChild(replacement, slot)
+        }
+    }
+
+    removeListener(obj) {
+        const parent = obj.parentElement
+        const replacement = obj.cloneNode(true)
+        obj.id = undefined
+        parent.replaceChild(replacement, obj)
+    }
+
+    playHumanOrComputer() {
+        // Initializing players and the board slots for new game
+        this.p1 = new Player(false, 'Player 1')
+        this.p2 = new Player(false, 'Player 2')
+        this.removeGridSlots()
+        this.createGridSlots()
+        this.p1BoardGridSlots = this.p1Board.children
+        this.p2BoardGridSlots = this.p2Board.children
+        this.createRotationArrows()
+
+        this.changeFooterText(
+            'Welcome to Battleship! Click one of the boxes to play against a computer or pass and play with a friend.'
+        )
+        const welcomeDialog = document.createElement('dialog')
+        welcomeDialog.id = 'welcomeDialog'
+
+        const playComputerButton = document.createElement('button')
+        playComputerButton.id = 'playComputerButton'
+        playComputerButton.className = 'gameModeButton'
+        playComputerButton.innerText = 'Play against a computer'
+
+        const playHumanButton = document.createElement('button')
+        playHumanButton.id = 'playHumanButton'
+        playHumanButton.className = 'gameModeButton'
+        playHumanButton.innerText = 'Pass and play with a friend'
+
+        welcomeDialog.style.width = '90vw'
+        welcomeDialog.style.height = '90vh'
+        welcomeDialog.style.backgroundColor = 'black'
+
+        document.body.appendChild(welcomeDialog)
+        welcomeDialog.append(playComputerButton, playHumanButton)
+        welcomeDialog.showModal()
+
+        playComputerButton.addEventListener('click', () => {
+            console.log('Play computer mode!')
+            this.computerIntroSetup()
+            welcomeDialog.close()
+        })
+        playHumanButton.addEventListener('click', () => {
+            console.log('Play human mode!')
+            this.humanIntroSetup()
+            welcomeDialog.close()
+        })
+    }
+
+    humanIntroSetup() {
+        this.showShipPlacement(this.p1)
+            .then(() => this.coverBoard(this.p1Board))
+            .then(() =>
+                this.changeFooterTextAndConfirm(
+                    `CHANGE: Now let ${this.p2.name} place ships. Click this message to continue.`
+                )
+            )
+            .then(() => this.showShipPlacement(this.p2))
+            .then(() => this.hideShips(this.p2BoardGridSlots))
+            .then(() =>
+                this.changeFooterTextAndConfirm(
+                    `CHANGE: The game is about to begin. It is now ${this.p1.name}'s turn. Click this message to continue.`
+                )
+            )
+            .then(() => {
+                this.removeArrows()
+                this.removeCoverBoard()
+            })
+            .then(() => this.humanTakeTurnAgainstHuman(this.p1, this.p2))
+    }
+
+    computerIntroSetup() {
+        this.showShipPlacement(this.p1)
+            .then(() => this.computerPlaceShips())
+            .then(() =>
+                this.changeFooterTextAndConfirm(
+                    `The computer has placed the ships. Click this message to continue.`
+                )
+            )
+            // .then(() => this.hideShips(this.p2BoardGridSlots))
+            .then(() => {
+                this.removeArrows()
+            })
+            .then(() => this.takeTurnAgainstComputer())
+    }
+
+    computerPlaceShips() {
+        const directions = ['up', 'down', 'left', 'right']
+        while (this.p2.shipsToPlace.length !== 0) {
+            // computer still has ships to place
+            let currentShip = this.p2.shipsToPlace[0]
+            let randomlyChosenSlot = this.p2.board.getRandomSlotKey()
+            this.p2.board.orientation =
+                directions[Math.floor(Math.random() * directions.length)]
+            let currentID = randomlyChosenSlot.substring(0, 2)
+            let slotIDsToHighlight = this.p2.board.selectSlots(
+                //only sets value INITIALLY, but NOT after placing a ship. returns an array or false
+                currentID,
+                currentShip.length
+            )
+            let slotElementsFromIDS = []
+            if (
+                slotIDsToHighlight !== false &&
+                this.p2.board.slotsMap[currentID].occupied === false
+            ) {
+                for (const slot of slotIDsToHighlight) {
+                    // convert returned id's to actual html elements
+                    slotElementsFromIDS.push(
+                        document.getElementById(`${slot + 'p2'}`)
+                    )
+                }
+                this.p2.board.placeShip(
+                    currentShip,
+                    currentID,
+                    this.p2.board.orientation
+                )
+                this.addOccupiedToEachSlotsClass(slotElementsFromIDS)
+                this.p2.shipsToPlace.shift()
+                if (this.p2.shipsToPlace.length === 0) {
+                    this.removeAllListeners(this.p2BoardGridSlots)
+                    return true
+                }
+            }
         }
     }
 
@@ -217,6 +368,12 @@ export default class Gui {
 
     listenForAttack(slots, currentPlayer, otherPlayer) {
         return new Promise((resolve) => {
+            let otherPlayerSlots
+            if (currentPlayer.name === 'Player 1') {
+                otherPlayerSlots = this.p2BoardGridSlots
+            } else {
+                otherPlayerSlots = this.p1BoardGridSlots
+            }
             Array.from(slots).forEach((slot) => {
                 slot.addEventListener('click', () => {
                     let slotID = slot.id.substring(0, 2)
@@ -229,15 +386,11 @@ export default class Gui {
                     if (validAttack && shipPresent) {
                         // Attack hit
                         otherPlayer.board.ships.forEach((ship) => {
-                            if (ship.slots.includes(slotID)) { //to only apply actions to the one ship
+                            if (ship.slots.includes(slotID)) {
+                                //to only apply actions to the one ship
                                 if (ship.isSunk()) {
                                     //Sunk or just a hit
                                     slot.classList.add('hit')
-                                    console.log(
-                                        { ship },
-                                        { slotID },
-                                        ship.slots.includes(slotID)
-                                    )
                                     this.changeFooterTextAndConfirm(
                                         `You sank ${otherPlayer.name}'s ${ship.title}! (Click to continue)`
                                     ).then(() => resolve(true))
@@ -247,11 +400,13 @@ export default class Gui {
                                         'You attacked and hit an enemy ship! (Click to continue)'
                                     ).then(() => resolve(true))
                                 }
+                                this.removeAllListeners(otherPlayerSlots) //stops multiple attacks in one turn
                             }
                         })
                     } else if (validAttack && !shipPresent) {
                         // Attack missed
                         slot.classList.add('attacked')
+                        this.removeAllListeners(otherPlayerSlots) //stops multiple attacks in one turn
                         this.changeFooterTextAndConfirm(
                             'You attacked and missed! (Click to continue)'
                         ).then(() => resolve(true))
@@ -267,12 +422,9 @@ export default class Gui {
         })
     }
 
-    takeTurn(currentPlayer, otherPlayer) {
+    humanTakeTurnAgainstHuman(currentPlayer, otherPlayer) {
         return new Promise((resolve) => {
             this.removeCoverBoard()
-            this.changeFooterText(
-                `${currentPlayer.name}, click on the enemy board to make an attack`
-            )
             let currentBoard
             let currentPlayerSlots
             let otherPlayersSlots
@@ -296,9 +448,7 @@ export default class Gui {
             ).then(() => {
                 this.removeAllListeners(otherPlayersSlots)
                 let playerWon = otherPlayer.board.shipsAllSunk()
-                console.log(playerWon)
                 if (playerWon) {
-                    console.log('Running the win if statement')
                     this.changeFooterTextAndConfirm(
                         `${currentPlayer.name} wins!`
                     ).then(() => {
@@ -311,10 +461,90 @@ export default class Gui {
                     this.changeFooterTextAndConfirm(
                         `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
                     ).then(() => {
-                        resolve(this.takeTurn(otherPlayer, currentPlayer)) //Loops around
+                        resolve(
+                            this.humanTakeTurnAgainstHuman(
+                                otherPlayer,
+                                currentPlayer
+                            )
+                        ) //Loops around
                     })
                 }
             })
+        })
+    }
+
+    takeTurnAgainstComputer() {
+        return new Promise((resolve) => {
+            this.changeFooterText(`Click on the enemy board to make an attack`)
+            this.listenForAttack(this.p2BoardGridSlots, this.p1, this.p2).then(
+                () => {
+                    let playerWon = this.p2.board.shipsAllSunk()
+                    if (playerWon) {
+                        this.changeFooterTextAndConfirm(
+                            `${this.p1.name} wins! Click here or press any key to start a new game`
+                        ).then(() => {
+                            return resolve(this.playHumanOrComputer()) //game ends
+                        })
+                    } else {
+                        resolve(this.computerTakeTurnAgainstHuman()) //Loops around
+                    }
+                }
+            )
+        })
+    }
+
+    computerAttack() {
+        return new Promise((resolve) => {
+            let randomIndex = Math.floor(
+                Math.random() * this.p2.unAttackedCoordinates.length
+            )
+            let randomCoordinate = this.p2.unAttackedCoordinates[randomIndex]
+            let randomSlot = document.getElementById(randomCoordinate + 'p1')
+            let validAttack = this.p2.makeAttack(
+                this.p1.board,
+                randomCoordinate
+            )
+            let shipPresent = this.p1.board.slotsMap[randomCoordinate].occupied
+            if (validAttack && shipPresent) {
+                // Attack hit
+                this.p1.board.ships.forEach((ship) => {
+                    if (ship.slots.includes(randomCoordinate)) {
+                        randomSlot.classList.add('hit')
+                        //to only apply actions to the one ship
+                        if (ship.isSunk()) {
+                            //Sunk or just a hit
+                            this.changeFooterTextAndConfirm(
+                                `${this.p2.name} sank your ${ship.title}! (Click to continue and start your turn)`
+                            ).then(() => resolve(true))
+                        } else {
+                            this.changeFooterTextAndConfirm(
+                                `${this.p2.name} hit your ${ship.title}. (Click to continue and start your turn)`
+                            ).then(() => resolve(true))
+                        }
+                    }
+                })
+            } else if (validAttack && !shipPresent) {
+                // Attack missed
+                randomSlot.classList.add('attacked')
+                this.changeFooterTextAndConfirm(
+                    `${this.p2.name} attacked and missed! (Click to continue and start your turn)`
+                ).then(() => resolve(true))
+            }
+        })
+    }
+
+    computerTakeTurnAgainstHuman() {
+        this.computerAttack().then((resolve) => {
+            let playerWon = this.p1.board.shipsAllSunk()
+            if (playerWon) {
+                this.changeFooterTextAndConfirm(
+                    `${this.p2.name} sunk all your ships! You lose. Click here or press any key to start a new game`
+                ).then(() => {
+                    return resolve(this.playHumanOrComputer()) //game ends
+                })
+            } else {
+                this.takeTurnAgainstComputer() //Loops around
+            }
         })
     }
 }
