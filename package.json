@@ -6,7 +6,8 @@
         "test": "jest",
         "build": "webpack",
         "watch": "webpack --watch",
-        "start": "webpack serve --open"
+        "start": "webpack serve --open",
+        "github": "git subtree push --prefix dist origin gh-pages"
     },
     "keywords": [],
     "author": "",
