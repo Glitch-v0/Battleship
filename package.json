@@ -11,6 +11,10 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Glitch-v0/Battleship"
+    },
     "devDependencies": {
         "@babel/core": "^7.23.6",
         "@babel/preset-env": "^7.23.6",
