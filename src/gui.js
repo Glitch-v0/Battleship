@@ -408,18 +408,14 @@ export default class Gui {
                             if (ship.slots.includes(slotID)) {
                                 //to only apply actions to the one ship
                                 if (ship.isSunk()) {
-                                    this.sinkSound
-                                        .play()
-                                        .catch((error) => console.debug(error))
+                                    this.sinkSound.play()
                                     //Sunk or just a hit
                                     slot.classList.add('hit')
                                     this.changeFooterTextAndConfirm(
                                         `You sank ${otherPlayer.name}'s ${ship.title}! (Click here or press any key to continue)`
                                     ).then(() => resolve(true))
                                 } else {
-                                    this.hitSound
-                                        .play()
-                                        .catch((error) => console.debug(error))
+                                    this.hitSound.play()
                                     slot.classList.add('hit')
                                     this.changeFooterTextAndConfirm(
                                         'You attacked and hit an enemy ship! (Click here or press any key to continue)'
@@ -430,9 +426,7 @@ export default class Gui {
                         })
                     } else if (validAttack && !shipPresent) {
                         // Attack missed
-                        this.missSound
-                            .play()
-                            .catch((error) => console.debug(error))
+                        this.missSound.play()
                         slot.classList.add('attacked')
                         this.removeAllListeners(otherPlayerSlots) //stops multiple attacks in one turn
                         this.changeFooterTextAndConfirm(
@@ -544,16 +538,12 @@ export default class Gui {
                         //to only apply actions to the one ship
                         if (ship.isSunk()) {
                             //Sunk or just a hit
-                            this.sinkSound().catch((error) =>
-                                console.debug(error)
-                            )
+                            this.sinkSound.play()
                             this.changeFooterTextAndConfirm(
                                 `${this.p2.name} sank your ${ship.title}! (Click here or press any key to continue)`
                             ).then(() => resolve(true))
                         } else {
-                            this.hitSound
-                                .play()
-                                .catch((error) => console.debug(error))
+                            this.hitSound.play()
                             this.changeFooterTextAndConfirm(
                                 `${this.p2.name} hit your ${ship.title}. (Click here or press any key to continue)`
                             ).then(() => resolve(true))
@@ -562,7 +552,7 @@ export default class Gui {
                 })
             } else if (validAttack && !shipPresent) {
                 // Attack missed
-                this.missSound.play().catch((error) => console.debug(error))
+                this.missSound.play()
                 randomSlot.classList.add('attacked')
                 this.changeFooterTextAndConfirm(
                     `${this.p2.name} attacked and missed! (Click here or press any key to continue)`
