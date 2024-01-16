@@ -1,6 +1,9 @@
 :root {
     --default-slot-color: rgb(0, 35, 63);
-    --highlight-color: rgb(0, 70, 127);
+    --highlight-color: rgb(218, 165, 7);
+    --site-background-color: rgb(54, 73, 96);
+    --board-border-color: rgba(142, 199, 210, 0.608);
+    font-size: 10px;
 }
 
 body {
@@ -14,8 +17,8 @@ body {
     width: 100vw;
     justify-content: center;
     align-items: center;
-    background-color: rgb(49, 70, 15);
-    gap: 5vw;
+    background-color: var(--site-background-color);
+    gap: 7.5vw;
 }
 
 .playerBoard {
@@ -27,17 +30,17 @@ body {
 }
 
 .gridSlot{
-    width: 100%;
-    height: 100%;
-    border: 2px solid rgb(0, 0, 0);
+    width: 97.5%;
+    height: 97.5%;
     background-color: rgb(0, 35, 63);
     caret-color: transparent;
 }
 
 .arrow {
-    font-size: 3rem;
+    font-size: 5rem;
     position: absolute;
     top: 57vh;
+    margin-left: 0.5vw;
 }
 
 #verticalArrow {
@@ -46,7 +49,11 @@ body {
 }
 
 .gridSlot:active {
-    background-color: rgb(0, 140, 255);
+    background-color: rgb(197, 204, 216);
+}
+
+.error {
+    background-color: rgba(255, 82, 82, 0.573) !important;
 }
 
 .highlight {
@@ -54,7 +61,7 @@ body {
 }
 
 .occupied {
-    background-color: rgb(45, 178, 0);
+    background-color: rgb(101, 114, 133);
 }
 
 .attackHover {
@@ -76,7 +83,8 @@ body {
 #footer {
     display: flex;
     justify-content: center;
-    height: 25px;
+    background-color: rgb(238, 247, 255);
+    font-size: 2rem;
 }
 
 #cover {
@@ -90,14 +98,31 @@ body {
     z-index: 1;
 }
 
-#winScreen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    color: white;
-    background-color: #1f1f1f;
-    opacity: 1;
-    z-index: 1;
+#welcomeDialog {
+    width: 50vw;
+    height: 45vh;
+    background-color: var(--site-background-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5vw
+}
+
+.gameModeButton {
+    width: 45%;
+    height: 30vh;
+    background-color: rgb(142, 199, 210);
+    border: 2px solid rgb(7, 71, 90);
+    font-size: 2rem;
+}
+
+.gameModeButton:hover {
+    background-color: rgb(172, 237, 252);
+    border: 4px solid rgb(7, 71, 90);
+    box-shadow: 2px 2px;
+}
+
+.gameModeButton:active {
+    background-color: rgb(255, 255, 255);
+    box-shadow: 4px 4px;
 }

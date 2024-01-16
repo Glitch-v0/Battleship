@@ -144,23 +144,19 @@ export default class Gui {
         playHumanButton.className = 'gameModeButton'
         playHumanButton.innerText = 'Pass and play with a friend'
 
-        welcomeDialog.style.width = '90vw'
-        welcomeDialog.style.height = '90vh'
-        welcomeDialog.style.backgroundColor = 'black'
-
         document.body.appendChild(welcomeDialog)
         welcomeDialog.append(playComputerButton, playHumanButton)
         welcomeDialog.showModal()
 
         playComputerButton.addEventListener('click', () => {
             console.log('Play computer mode!')
+            welcomeDialog.remove()
             this.computerIntroSetup()
-            welcomeDialog.close()
         })
         playHumanButton.addEventListener('click', () => {
             console.log('Play human mode!')
+            welcomeDialog.remove()
             this.humanIntroSetup()
-            welcomeDialog.close()
         })
     }
 
@@ -169,14 +165,14 @@ export default class Gui {
             .then(() => this.coverBoard(this.p1Board))
             .then(() =>
                 this.changeFooterTextAndConfirm(
-                    `CHANGE: Now let ${this.p2.name} place ships. Click this message to continue.`
+                    `CHANGE: Now let ${this.p2.name} place ships. (Click here or press any key to continue)`
                 )
             )
             .then(() => this.showShipPlacement(this.p2))
             .then(() => this.hideShips(this.p2BoardGridSlots))
             .then(() =>
                 this.changeFooterTextAndConfirm(
-                    `CHANGE: The game is about to begin. It is now ${this.p1.name}'s turn. Click this message to continue.`
+                    `CHANGE: The game is about to begin. It is now ${this.p1.name}'s turn. (Click here or press any key to continue)`
                 )
             )
             .then(() => {
@@ -189,12 +185,12 @@ export default class Gui {
     computerIntroSetup() {
         this.showShipPlacement(this.p1)
             .then(() => this.computerPlaceShips())
+            .then(() => this.hideShips(this.p2BoardGridSlots))
             .then(() =>
                 this.changeFooterTextAndConfirm(
                     `The computer has placed the ships. Click this message to continue.`
                 )
             )
-            // .then(() => this.hideShips(this.p2BoardGridSlots))
             .then(() => {
                 this.removeArrows()
             })
@@ -248,7 +244,7 @@ export default class Gui {
         } else {
             currentBoard = this.p2Board
         }
-        currentBoard.style.border = '2px solid rgb(0, 102, 255)'
+        currentBoard.style.border = '3px solid rgb(142, 199, 210)'
 
         this.arrowRotation(player) // enables current player to rotate ship during placement
         let currentShip = player.shipsToPlace[0]
@@ -259,7 +255,7 @@ export default class Gui {
             player.name === 'Player 1'
                 ? this.p1BoardGridSlots
                 : this.p2BoardGridSlots
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
             for (let slot of currentGridSlots) {
                 const currentID = slot.id.substring(0, 2)
@@ -267,6 +263,9 @@ export default class Gui {
                 let slotElementsFromIDS
                 let slotIDsToHighlight
                 slot.addEventListener('mouseover', (event) => {
+                    this.changeFooterText(
+                        `Now place your ${currentShip.title}. (${currentShip.length} slots)`
+                    )
                     currentShip = player.shipsToPlace[0]
                     slotElementsFromIDS = []
                     slotIDsToHighlight = player.board.selectSlots(
@@ -275,6 +274,7 @@ export default class Gui {
                         currentShip.length
                     )
                     if (slotIDsToHighlight !== false) {
+                        this.footer.classList.remove('error')
                         //if an array exists.
                         if (slotElementsFromIDS.length === 0) {
                             // Only adds to array if array is empty
@@ -290,13 +290,20 @@ export default class Gui {
                         for (const slot of slotElementsFromIDS) {
                             slot.classList.add('highlight')
                         }
+                    } else {
+                        this.changeFooterText(`You can't place the ${currentShip.title} there in that orientation.`)
+                        slot.classList.add('error')
+                        this.footer.classList.add('error')
                     }
                 })
                 slot.addEventListener('mouseleave', (event) => {
                     // to undo the color change
-                    for (const slot of slotElementsFromIDS) {
-                        slot.classList.remove('highlight')
+                    if (slotElementsFromIDS !== undefined) {
+                        for (const slot of slotElementsFromIDS) {
+                            slot.classList.remove('highlight')
+                        }
                     }
+                    slot.classList.remove('error')
                 })
                 slot.addEventListener('click', (event) => {
                     if (
@@ -392,12 +399,12 @@ export default class Gui {
                                     //Sunk or just a hit
                                     slot.classList.add('hit')
                                     this.changeFooterTextAndConfirm(
-                                        `You sank ${otherPlayer.name}'s ${ship.title}! (Click to continue)`
+                                        `You sank ${otherPlayer.name}'s ${ship.title}! (Click here or press any key to continue)`
                                     ).then(() => resolve(true))
                                 } else {
                                     slot.classList.add('hit')
                                     this.changeFooterTextAndConfirm(
-                                        'You attacked and hit an enemy ship! (Click to continue)'
+                                        'You attacked and hit an enemy ship! (Click here or press any key to continue)'
                                     ).then(() => resolve(true))
                                 }
                                 this.removeAllListeners(otherPlayerSlots) //stops multiple attacks in one turn
@@ -408,7 +415,7 @@ export default class Gui {
                         slot.classList.add('attacked')
                         this.removeAllListeners(otherPlayerSlots) //stops multiple attacks in one turn
                         this.changeFooterTextAndConfirm(
-                            'You attacked and missed! (Click to continue)'
+                            'You attacked and missed! (Click here or press any key to continue)'
                         ).then(() => resolve(true))
                     }
                 })
@@ -425,6 +432,7 @@ export default class Gui {
     humanTakeTurnAgainstHuman(currentPlayer, otherPlayer) {
         return new Promise((resolve) => {
             this.removeCoverBoard()
+            this.changeFooterText(`Click anywhere on ${otherPlayer.name}'s board to launch an attack.`)
             let currentBoard
             let currentPlayerSlots
             let otherPlayersSlots
@@ -459,7 +467,7 @@ export default class Gui {
                     this.hideShips(currentPlayer)
                     this.coverBoard(currentBoard)
                     this.changeFooterTextAndConfirm(
-                        `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name} and click to continue.`
+                        `${currentPlayer.name}'s turn is over. Pass to ${otherPlayer.name}. (Click here or press any key to continue)`
                     ).then(() => {
                         resolve(
                             this.humanTakeTurnAgainstHuman(
@@ -514,11 +522,11 @@ export default class Gui {
                         if (ship.isSunk()) {
                             //Sunk or just a hit
                             this.changeFooterTextAndConfirm(
-                                `${this.p2.name} sank your ${ship.title}! (Click to continue and start your turn)`
+                                `${this.p2.name} sank your ${ship.title}! (Click here or press any key to continue)`
                             ).then(() => resolve(true))
                         } else {
                             this.changeFooterTextAndConfirm(
-                                `${this.p2.name} hit your ${ship.title}. (Click to continue and start your turn)`
+                                `${this.p2.name} hit your ${ship.title}. (Click here or press any key to continue)`
                             ).then(() => resolve(true))
                         }
                     }
@@ -527,7 +535,7 @@ export default class Gui {
                 // Attack missed
                 randomSlot.classList.add('attacked')
                 this.changeFooterTextAndConfirm(
-                    `${this.p2.name} attacked and missed! (Click to continue and start your turn)`
+                    `${this.p2.name} attacked and missed! (Click here or press any key to continue)`
                 ).then(() => resolve(true))
             }
         })
