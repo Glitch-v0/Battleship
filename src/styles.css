@@ -83,6 +83,7 @@ body {
 #footer {
     display: flex;
     justify-content: center;
+    height: fit-content;
     background-color: rgb(238, 247, 255);
     font-size: 2rem;
 }
@@ -100,10 +101,10 @@ body {
 
 #welcomeDialog {
     width: 50vw;
-    height: 45vh;
+    height: 50vh;
     background-color: var(--site-background-color);
     display: flex;
-    justify-content: center;
+    justify-content: enter;
     align-items: center;
     gap: 5vw
 }

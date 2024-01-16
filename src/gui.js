@@ -1,4 +1,7 @@
 import Player from './player'
+import hitSound from './hit-sound.mp3'
+import missSound from './miss-sound.mp3'
+import sinkSound from './sink-sound.mp3'
 
 export default class Gui {
     constructor() {
@@ -9,6 +12,9 @@ export default class Gui {
         this.p2BoardGridSlots = this.p2Board.children
         this.p1
         this.p2
+        this.hitSound = new Audio(hitSound)
+        this.missSound = new Audio(missSound)
+        this.sinkSound = new Audio(sinkSound)
     }
 
     createRotationArrows() {
@@ -148,6 +154,10 @@ export default class Gui {
         welcomeDialog.append(playComputerButton, playHumanButton)
         welcomeDialog.showModal()
 
+        this.missSound.playbackRate = 1.75
+        this.missSound.volume = 0.35
+        this.hitSound.playbackRate = 1.5
+
         playComputerButton.addEventListener('click', () => {
             console.log('Play computer mode!')
             welcomeDialog.remove()
@@ -188,7 +198,7 @@ export default class Gui {
             .then(() => this.hideShips(this.p2BoardGridSlots))
             .then(() =>
                 this.changeFooterTextAndConfirm(
-                    `The computer has placed the ships. Click this message to continue.`
+                    `The computer has placed the ships. (Click this message or press any key to continue)`
                 )
             )
             .then(() => {
@@ -291,7 +301,9 @@ export default class Gui {
                             slot.classList.add('highlight')
                         }
                     } else {
-                        this.changeFooterText(`You can't place the ${currentShip.title} there in that orientation.`)
+                        this.changeFooterText(
+                            `You can't place the ${currentShip.title} there in that orientation.`
+                        )
                         slot.classList.add('error')
                         this.footer.classList.add('error')
                     }
@@ -396,12 +408,14 @@ export default class Gui {
                             if (ship.slots.includes(slotID)) {
                                 //to only apply actions to the one ship
                                 if (ship.isSunk()) {
+                                    this.sinkSound.play()
                                     //Sunk or just a hit
                                     slot.classList.add('hit')
                                     this.changeFooterTextAndConfirm(
                                         `You sank ${otherPlayer.name}'s ${ship.title}! (Click here or press any key to continue)`
                                     ).then(() => resolve(true))
                                 } else {
+                                    this.hitSound.play()
                                     slot.classList.add('hit')
                                     this.changeFooterTextAndConfirm(
                                         'You attacked and hit an enemy ship! (Click here or press any key to continue)'
@@ -412,6 +426,7 @@ export default class Gui {
                         })
                     } else if (validAttack && !shipPresent) {
                         // Attack missed
+                        this.missSound.play()
                         slot.classList.add('attacked')
                         this.removeAllListeners(otherPlayerSlots) //stops multiple attacks in one turn
                         this.changeFooterTextAndConfirm(
@@ -432,7 +447,9 @@ export default class Gui {
     humanTakeTurnAgainstHuman(currentPlayer, otherPlayer) {
         return new Promise((resolve) => {
             this.removeCoverBoard()
-            this.changeFooterText(`Click anywhere on ${otherPlayer.name}'s board to launch an attack.`)
+            this.changeFooterText(
+                `Click anywhere on ${otherPlayer.name}'s board to launch an attack.`
+            )
             let currentBoard
             let currentPlayerSlots
             let otherPlayersSlots
@@ -521,10 +538,12 @@ export default class Gui {
                         //to only apply actions to the one ship
                         if (ship.isSunk()) {
                             //Sunk or just a hit
+                            this.sinkSound()
                             this.changeFooterTextAndConfirm(
                                 `${this.p2.name} sank your ${ship.title}! (Click here or press any key to continue)`
                             ).then(() => resolve(true))
                         } else {
+                            this.hitSound.play()
                             this.changeFooterTextAndConfirm(
                                 `${this.p2.name} hit your ${ship.title}. (Click here or press any key to continue)`
                             ).then(() => resolve(true))
@@ -533,6 +552,7 @@ export default class Gui {
                 })
             } else if (validAttack && !shipPresent) {
                 // Attack missed
+                this.missSound.play()
                 randomSlot.classList.add('attacked')
                 this.changeFooterTextAndConfirm(
                     `${this.p2.name} attacked and missed! (Click here or press any key to continue)`
